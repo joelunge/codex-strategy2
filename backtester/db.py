@@ -9,8 +9,8 @@ def get_connection(host="localhost", user="root", password="root", database="sct
 
 def load_candles(conn, table, symbol, start, end):
     query = (
-        f"SELECT startTime, openPrice, highPrice, lowPrice, closePrice, volume, turnover "
-        f"FROM {table} WHERE symbol=%s AND startTime >= %s AND startTime <= %s ORDER BY startTime"
+        f"SELECT symbol, startTime, openPrice, highPrice, lowPrice, closePrice, volume, turnover "
+        f"FROM {table} WHERE symbol = %s AND startTime BETWEEN %s AND %s ORDER BY startTime"
     )
     df = pd.read_sql(query, conn, params=(symbol, start, end))
     df['startTime'] = pd.to_datetime(df['startTime'])

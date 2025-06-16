@@ -14,8 +14,12 @@ def backtest(df5, df1, params):
     macd_full = macd(df1['closePrice'], params['macd_fast'], params['macd_slow'], params['macd_signal'])
     df1 = df1.copy()
     df1[['macd', 'signal', 'hist']] = macd_full
-    macd_sel = df1.groupby(df1['startTime'].dt.floor('5min')).apply(lambda x: x.loc[x['hist'].abs().idxmax()])
-    macd_sel = macd_sel.sort_values('startTime')
+    macd_sel = (
+        df1.groupby(df1['startTime'].dt.floor('5min'))
+        .apply(lambda x: x.loc[x['hist'].abs().idxmax()])
+        .reset_index(drop=True)
+        .sort_values('startTime')
+    )
     macd_sel['avg'] = macd_sel['hist'].rolling(72).mean()
     macd_map = macd_sel.set_index('startTime')
 

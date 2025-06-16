@@ -3,7 +3,7 @@ from .indicators import ema, macd, historical_volatility
 from .strategy import detect_crosses, Trade
 
 
-def backtest(df5, df1, params):
+def backtest(df5, df1, params, start_time=None):
     ema_fast = ema(df5['closePrice'], params['ema_fast'])
     ema_slow = ema(df5['closePrice'], params['ema_slow'])
     hv = historical_volatility(df5['closePrice'], params['hv_len']) * 100
@@ -22,6 +22,16 @@ def backtest(df5, df1, params):
     )
     macd_sel['avg'] = macd_sel['hist'].rolling(72).mean()
     macd_map = macd_sel.set_index('startTime')
+
+    if start_time is not None:
+        start_dt = pd.to_datetime(start_time)
+        mask5 = df5['startTime'] >= start_dt
+        df5 = df5.loc[mask5].reset_index(drop=True)
+        ema_fast = ema_fast[mask5].reset_index(drop=True)
+        ema_slow = ema_slow[mask5].reset_index(drop=True)
+        golden = golden[mask5].reset_index(drop=True)
+        death = death[mask5].reset_index(drop=True)
+        macd_map = macd_map.loc[macd_map.index >= start_dt]
 
     trades = []
     in_pos = False

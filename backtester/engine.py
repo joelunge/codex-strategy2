@@ -53,7 +53,7 @@ def backtest(df5, df1, params):
                 ticks_in_cross = 0
                 cross_start = time
             if side:
-                if side == 'long' and ema_fast.iloc[i] > ema_slow.iloc[i] and macd_val <= avg_macd * (-2*(ticks_in_cross+1)):
+                if side == 'long' and ema_fast.iloc[i] > ema_slow.iloc[i] and macd_val <= avg_macd * 2:
                     ticks_in_cross += 1
                     if ticks_in_cross <= 5:
                         entry_price = row['closePrice']
@@ -62,7 +62,7 @@ def backtest(df5, df1, params):
                         sl_pct = hv_val / params['hv_sl_div']
                         in_pos = True
                         ticks_required = ticks_in_cross
-                elif side == 'short' and ema_fast.iloc[i] < ema_slow.iloc[i] and macd_val >= avg_macd * (2*(ticks_in_cross+1)):
+                elif side == 'short' and ema_fast.iloc[i] < ema_slow.iloc[i] and macd_val >= avg_macd * 2:
                     ticks_in_cross += 1
                     if ticks_in_cross <= 5:
                         entry_price = row['closePrice']
@@ -96,9 +96,9 @@ def backtest(df5, df1, params):
                     continue
             trades.append(Trade(df5['symbol'].iloc[0], side, entry_time, entry_price, time, exit_price, outcome, tp_pct, sl_pct, macd_val, avg_macd, ticks_required, cross_start))
             in_pos = False
-            cooldown = 10
             ticks_in_cross = 0
             side = None
+            cooldown = 10
     return trades
 
 

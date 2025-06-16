@@ -2,8 +2,7 @@ import argparse
 import yaml
 import pandas as pd
 from backtester.db import get_connection, load_candles_with_buffer
-from backtester.engine import backtest, trades_to_equity
-from backtester.indicators import macd
+from backtester.engine import backtest, trades_to_equity, debug_candle
 
 
 def parse_args():
@@ -20,6 +19,7 @@ def parse_args():
     p.add_argument('--hv_len', type=int, default=200)
     p.add_argument('--hv_tp_div', type=float, default=3)
     p.add_argument('--hv_sl_div', type=float, default=4.5)
+    p.add_argument('--debug_ts')
     p.add_argument('--hyperparam_config')
     return p.parse_args()
 
@@ -51,6 +51,36 @@ def main():
         ema_slow=26,  # enough for MACD
         hv_len=params['hv_len'],
     )
+    if args.debug_ts:
+        info = debug_candle(df5, df1, params, args.start, args.debug_ts)
+        if not info:
+            print(f"No data for {args.debug_ts}")
+        else:
+            print("=== DEBUG INFO ===")
+            for key in [
+                'symbol',
+                'startTime',
+                'ema_fast',
+                'ema_slow',
+                'golden_cross',
+                'death_cross',
+                'hv',
+                'tp_pct',
+                'sl_pct',
+                'ticks_in_cross',
+                'macd_val',
+                'avg_macd',
+                'pos_hist',
+                'neg_hist',
+                'trade_trigger',
+                'reason',
+            ]:
+                print(f"{key}: {info[key]}")
+            print("1m MACD bars:")
+            for _, r in info['minute_block'].iterrows():
+                print(f"{r['startTime']}, {r['hist']}")
+        return
+
     trades = backtest(df5, df1, params, start_time=args.start)
     if trades:
         trades_df = pd.DataFrame([t.__dict__ for t in trades])
